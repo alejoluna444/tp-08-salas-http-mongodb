@@ -1,30 +1,34 @@
-function crearServicioReservas(datosIniciales) {
-  let reservas = [...datosIniciales];
 
-  function listar() {
-    return reservas;
+function crearServicioReservas(db) {
+  const coleccion = db.collection("reservas");
+
+  async function listar() {
+    return await coleccion.find().sort({ id: 1 }).toArray();
   }
 
-  function buscarPorId(id) {
-    return reservas.find((reserva) => reserva.id === id);
+  async function buscarPorId(id) {
+    return await coleccion.findOne({ id: id });
   }
 
-  function contar() {
-    return reservas.length;
+  async function contar() {
+    return await coleccion.countDocuments();
   }
 
-  function crear(datos) {
-    const nuevoId =
-      reservas.length > 0
-        ? Math.max(...reservas.map((reserva) => reserva.id)) + 1
-        : 1;
+  async function crear(datos) {
+    const ultimaReserva = await coleccion
+      .find()
+      .sort({ id: -1 })
+      .limit(1)
+      .next();
+
+    const nuevoId = ultimaReserva ? ultimaReserva.id + 1 : 1;
 
     const nuevaReserva = {
       id: nuevoId,
       ...datos,
     };
 
-    reservas.push(nuevaReserva);
+    await coleccion.insertOne(nuevaReserva);
 
     return nuevaReserva;
   }

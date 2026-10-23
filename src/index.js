@@ -1,13 +1,12 @@
+
 const { obtenerConfiguracion } = require("./configuracion");
+const { conectarDB } = require("../config/database");
 const { crearServicioReservas } = require("./servicios/reservas");
 const { crearControladorReservas } = require("./controladores/reservas");
 const { crearApp } = require("./app");
 
-const configuracion = obtenerConfiguracion();
-
 const datosIniciales = [
   {
-    id: 1,
     estudiante: "Juan Pérez",
     email: "juan@gmail.com",
     sala: "Sala Norte",
@@ -16,7 +15,6 @@ const datosIniciales = [
     personas: 2,
   },
   {
-    id: 2,
     estudiante: "María López",
     email: "maria@gmail.com",
     sala: "Sala Sur",
@@ -25,7 +23,6 @@ const datosIniciales = [
     personas: 4,
   },
   {
-    id: 3,
     estudiante: "Pedro Gómez",
     email: "pedro@gmail.com",
     sala: "Sala Multimedia",
@@ -34,7 +31,6 @@ const datosIniciales = [
     personas: 3,
   },
   {
-    id: 4,
     estudiante: "Lucía Fernández",
     email: "lucia@gmail.com",
     sala: "Sala Norte",
@@ -44,17 +40,36 @@ const datosIniciales = [
   },
 ];
 
-const servicio = crearServicioReservas(datosIniciales);
+async function iniciarServidor() {
+  const configuracion = obtenerConfiguracion();
 
-const controlador = crearControladorReservas(servicio);
+  const db = await conectarDB();
 
-const app = crearApp({
-  controlador,
-  entorno: configuracion.entorno,
-});
+  const servicio = crearServicioReservas(db);
 
-app.listen(configuracion.puerto, () => {
-  console.log(
-    `Servidor funcionando en http://localhost:${configuracion.puerto}`,
-  );
+  if ((await servicio.contar()) === 0) {
+    for (const reserva of datosIniciales) {
+      await servicio.crear(reserva);
+    }
+
+    console.log("Reservas iniciales cargadas");
+  }
+
+  const controlador = crearControladorReservas(servicio);
+
+  const app = crearApp({
+    controlador,
+    entorno: configuracion.entorno,
+  });
+
+  app.listen(configuracion.puerto, () => {
+    console.log(
+      `Servidor funcionando en http://localhost:${configuracion.puerto}`,
+    );
+  });
+}
+
+iniciarServidor().catch((error) => {
+  console.error("Error al iniciar la aplicación:", error.message);
+  process.exitCode = 1;
 });

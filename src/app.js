@@ -33,13 +33,14 @@ function crearApp({ controlador, entorno }) {
       titulo: "Inicio",
     });
   });
-
-  app.get("/estado", (req, res) => {
-    res.json({
-      cantidad: controlador.contarReservas(),
-      idSolicitud: req.idSolicitud,
-    });
+  
+app.get("/estado", async (req, res) => {
+  res.json({
+    cantidad: await controlador.contarReservas(),
+    idSolicitud: req.idSolicitud,
   });
+});
+
 
   app.use("/reservas", crearRouterReservas(controlador));
 
