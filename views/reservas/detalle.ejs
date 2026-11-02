@@ -2,7 +2,7 @@
     <h2>Detalle de la reserva</h2>
 
     <article>
-        <h3>Reserva #<%= reserva.id %></h3>
+        <h3>Reserva: <%= reserva.id %></h3>
 
         <p>
             <strong>Estudiante:</strong>
@@ -32,6 +32,11 @@
         <p>
             <strong>Personas:</strong>
             <%= reserva.personas %>
+        </p>
+
+        <p>
+            <strong>Estado:</strong>
+            <%= reserva.estado %>
         </p>
     </article>
 

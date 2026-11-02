@@ -1,13 +1,43 @@
+const { ObjectId } = require("mongodb");
+const { prepararReserva } = require("../modelos/reserva");
 
 function crearServicioReservas(db) {
   const coleccion = db.collection("reservas");
 
-  async function listar() {
-    return await coleccion.find().sort({ id: 1 }).toArray();
+  function convertirReserva(documento) {
+    const { _id, ...datos } = documento;
+
+    return {
+      id: _id.toString(),
+      ...datos,
+    };
+  }
+
+  async function listar(sala) {
+    const criterio = {};
+
+    if (sala !== undefined) {
+      criterio.sala = sala;
+    }
+
+    const documentos = await coleccion
+      .find(criterio)
+      .sort({ _id: 1 })
+      .toArray();
+
+    return documentos.map(convertirReserva);
   }
 
   async function buscarPorId(id) {
-    return await coleccion.findOne({ id: id });
+    const documento = await coleccion.findOne({
+      _id: new ObjectId(id),
+    });
+
+    if (!documento) {
+      return null;
+    }
+
+    return convertirReserva(documento);
   }
 
   async function contar() {
@@ -15,22 +45,14 @@ function crearServicioReservas(db) {
   }
 
   async function crear(datos) {
-    const ultimaReserva = await coleccion
-      .find()
-      .sort({ id: -1 })
-      .limit(1)
-      .next();
+    const nuevaReserva = prepararReserva(datos);
 
-    const nuevoId = ultimaReserva ? ultimaReserva.id + 1 : 1;
+    const resultado = await coleccion.insertOne(nuevaReserva);
 
-    const nuevaReserva = {
-      id: nuevoId,
-      ...datos,
+    return {
+      id: resultado.insertedId.toString(),
+      ...nuevaReserva,
     };
-
-    await coleccion.insertOne(nuevaReserva);
-
-    return nuevaReserva;
   }
 
   return {

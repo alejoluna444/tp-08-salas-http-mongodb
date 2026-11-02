@@ -3,14 +3,18 @@ const path = require("path");
 const expressLayouts = require("express-ejs-layouts");
 const morgan = require("morgan");
 
+const { manejarErrores } = require("./middleware/errores");
+
 const {
   identificarSolicitud,
   medirDuracion,
 } = require("./middleware/solicitudes");
 
 const { crearRouterReservas } = require("./rutas/reservas");
+const { crearRouterApiReservas } = require("./rutas/apiReservas");
+const { crearControladorApiReservas } = require("./controladores/apiReservas");
 
-function crearApp({ controlador, entorno }) {
+function crearApp({ controlador, servicio, entorno }) {
   const app = express();
 
   app.set("view engine", "ejs");
@@ -28,27 +32,44 @@ function crearApp({ controlador, entorno }) {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
+  // Página principal
   app.get("/", (req, res) => {
-    res.render("inicio", {
-      titulo: "Inicio",
+    res.render("inicio", { titulo: "Inicio" });
+  });
+
+  // Estado de la base de datos
+  app.get("/estado", async (req, res) => {
+    const cantidad = await controlador.contarReservas();
+
+    res.json({
+      cantidad,
+      idSolicitud: res.locals.solicitudId,
     });
   });
-  
-app.get("/estado", async (req, res) => {
-  res.json({
-    cantidad: await controlador.contarReservas(),
-    idSolicitud: req.idSolicitud,
-  });
-});
 
-
+  // Rutas HTML
   app.use("/reservas", crearRouterReservas(controlador));
 
+  // Rutas API
+  const controladorApi = crearControladorApiReservas(servicio);
+
+  app.use("/api/reservas", crearRouterApiReservas(controladorApi));
+
+  // Ruta para direcciones inexistentes
   app.use((req, res) => {
+    if (req.originalUrl.startsWith("/api/")) {
+      return res.status(404).json({
+        error: "Ruta API no encontrada.",
+      });
+    }
+
     res.status(404).render("no-encontrado", {
       titulo: "Página no encontrada",
     });
   });
+
+  // Middleware de errores: siempre al final
+  app.use(manejarErrores);
 
   return app;
 }

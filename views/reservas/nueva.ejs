@@ -15,7 +15,8 @@
                 type="text"
                 id="estudiante"
                 name="estudiante"
-                value="<%= datos.estudiante %>"
+                value="<%= datos.estudiante || '' %>"
+                required
             >
         </div>
 
@@ -25,13 +26,14 @@
                 type="email"
                 id="email"
                 name="email"
-                value="<%= datos.email %>"
+                value="<%= datos.email || '' %>"
+                required
             >
         </div>
 
         <div>
             <label for="sala">Sala:</label>
-            <select id="sala" name="sala">
+            <select id="sala" name="sala" required>
                 <option value="">Seleccionar sala</option>
 
                 <option value="Sala Norte"
@@ -57,14 +59,15 @@
                 type="text"
                 id="fecha"
                 name="fecha"
-                value="<%= datos.fecha %>"
+                value="<%= datos.fecha || '' %>"
                 placeholder="Ejemplo: 2026-09-30"
+                required
             >
         </div>
 
         <div>
             <label for="turno">Turno:</label>
-            <select id="turno" name="turno">
+            <select id="turno" name="turno" required>
                 <option value="">Seleccionar turno</option>
 
                 <option value="Mañana"
@@ -90,7 +93,11 @@
                 type="number"
                 id="personas"
                 name="personas"
-                value="<%= datos.personas %>"
+                min="1"
+                max="6"
+                step="1"
+                value="<%= datos.personas ?? '' %>"
+                required
             >
         </div>
 

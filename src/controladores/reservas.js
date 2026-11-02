@@ -1,11 +1,10 @@
-
 function crearControladorReservas(servicio) {
   async function listarReservas(req, res) {
     const reservas = await servicio.listar();
 
     res.render("reservas/lista", {
       titulo: "Reservas",
-      reservas: reservas,
+      reservas,
     });
   }
 
@@ -18,7 +17,13 @@ function crearControladorReservas(servicio) {
   }
 
   async function mostrarDetalle(req, res) {
-    const id = Number(req.params.id);
+    const id = req.params.id;
+
+    if (!/^[a-fA-F0-9]{24}$/.test(id)) {
+      return res.status(404).render("no-encontrado", {
+        titulo: "Reserva no encontrada",
+      });
+    }
 
     const reserva = await servicio.buscarPorId(id);
 
@@ -30,7 +35,7 @@ function crearControladorReservas(servicio) {
 
     res.render("reservas/detalle", {
       titulo: "Detalle de reserva",
-      reserva: reserva,
+      reserva,
     });
   }
 

@@ -14,6 +14,8 @@ function obtenerConfiguracion() {
   };
 }
 
+const configuracion = obtenerConfiguracion();
+
 module.exports = {
-  obtenerConfiguracion,
+  configuracion,
 };
